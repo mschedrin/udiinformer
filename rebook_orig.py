@@ -34,68 +34,27 @@ def main():
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=False)
-        #browser = p.firefox.launch(headless=True)
         page = browser.newPage()
-        #page.goto("https://selfservice.udi.no/en-gb/")
+        page.goto("https://selfservice.udi.no/en-gb/")
         # click on log in button
-        #page.click("#ctl00_BodyRegion_PageRegion_MainRegion_LogInHeading")
-        page.goto("https://my.udi.no/")
+        page.click("#ctl00_BodyRegion_PageRegion_MainRegion_LogInHeading")
 
         page.type("input[type=email]", config.EMAIL)
         page.type("input[type=password]", config.PWD.get_secret_value())
         page.click("#next")
 
         try:
-            page.waitForSelector('text="Gå til søknad "')
+            book_btn_id: str = "#ctl00_BodyRegion_PageRegion_MainRegion_IconNavigationTile2_heading"
+            page.waitForSelector(book_btn_id)
 
-        #except playwright.helper.TimeoutError:
-        except Exception:
+            # book appointment
+            page.click(book_btn_id)
+        except playwright.helper.TimeoutError:
             msg = "Failed to login. Check your password."
             print(msg)
             telegram_send.send(messages=[msg])
             return
 
-        page.waitForSelector('text="Gå til søknad "')
-        page.click('a.Button__btn___3uXHU')
-        page.waitForSelector('button.primary')
-        # find current date
-        current_booking_txt = page.textContent('.appointment > div:nth-child(1) > h3:nth-child(2)')
-        current_booking = dateparser.parse(current_booking_txt)
-        page.click('button.primary')
-        page.waitForNavigation()
-
-        # temporary initialize loop condition variable
-        view_month = current_booking - (current_booking - dateparser.parse("1 day")) 
-        # iterate over months trying to find available appointments
-        next_btn_id = "#ctl00_BodyRegion_PageRegion_MainRegion_appointmentReservation_appointmentCalendar_btnNext"
-        while current_booking > view_month:
-            view_month_txt = page.querySelector("h2").innerText()
-            view_month = dateparser.parse(view_month_txt)
-            print(f"Checking { view_month_txt }")
-            num_closed = len(page.querySelectorAll('css=[class="bookingCalendarClosedDay"]')) + len(page.querySelectorAll('css=[class="bookingCalendarFullyBookedDay"]'))
-
-            num_days_in_month = monthrange(view_month.year, view_month.month)[1]
-            if num_days_in_month == num_closed:
-                print("Reached a fully closed month.")
-                page.click(next_btn_id)
-                page.waitForNavigation()
-                continue
-
-            bookable = []
-            for class_id in [".bookingCalendarHalfBookedDay", ".bookingCalendarBookableDay", ".bookingCalendarBookedDay"]:
-                bookable.extend(page.querySelectorAll(class_id))
-
-            if bookable:
-                bookable = sorted(bookable, key=lambda x: int(x.innerText().split()[0]))
-                bookable_day = int(bookable[0].innerText().split()[0])
-                if bookable_day < current_booking.day:
-                    msg = f"It is possible to rebook the appointment on {bookable_day}, {view_month_txt}!"
-                    send_success(page, msg)
-                    break
-
-        print("No possibilities to rebook.")
-
-'''
         # click on the first one in the list
         page.click(
             "#ctl00_BodyRegion_PageRegion_MainRegion_ApplicationOverview_applicationOverviewListView_ctrl0_btnBookAppointment"
@@ -147,7 +106,7 @@ def main():
             page.waitForNavigation()
 
         print("No possibilities to rebook.")
-'''
+
 
 if __name__ == "__main__":
     main()
