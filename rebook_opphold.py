@@ -73,8 +73,8 @@ def main():
 
         current_booking_id = "#ctl00_PageRegion_MainContentRegion_ViewControl_spnReceiptAndBooking_BookingSummaryInfo_lblDate"
         current_booking = page.text_content(current_booking_id)
-        #current_booking = dateparser.parse(current_booking)
-        current_booking = dateparser.parse("Wednesday 1 September 2022")
+        current_booking = dateparser.parse(current_booking)
+        #current_booking = dateparser.parse("Wednesday 1 September 2022")
         page.click(change_btn_id)
         #page.waitForNavigation(waitUntil='load')
         # page.wait_for_load_state('networkidle')
