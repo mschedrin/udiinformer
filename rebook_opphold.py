@@ -61,19 +61,17 @@ def main():
         page.type("input[type=email]", config.EMAIL)
         page.type("input[type=password]", config.PWD.get_secret_value())
         page.click("#next")
-
+        
         try:
             book_btn_id: str = "#ctl00_BodyRegion_PageRegion_MainRegion_IconNavigationTile2_heading"
             page.wait_for_selector(book_btn_id)
-            
-
             # book appointment
             page.click(book_btn_id)
         except Exception as e:
-            logger.info(str(e))
+            logger.exception(e)
             msg = "Failed to login. Check your password."
-            logger.info(msg)
             telegram_send.send(messages=[msg])
+            logger.error(msg)
             return
 
         # click on the first one in the list
@@ -134,8 +132,9 @@ def main():
                 bookable_day = int(bookable[0].inner_text().split()[0])
                 bookable_date = datetime.datetime(view_month.year,view_month.month,bookable_day)
                 if bookable_date < current_booking:
-                    msg = f"It is possible to rebook the appointment on {bookable_day}, {view_month_txt}!"
+                    msg = f"It is possible to rebook the appointment on {bookable_day}, {view_month_txt}!\nhttps://selfservice.udi.no/en-gb/applicant-start/"
                     send_success(page, msg)
+                    logger.info(msg)
                     success = True
                     break
 
@@ -146,7 +145,7 @@ def main():
             page.wait_for_load_state(state = "domcontentloaded")
             time.sleep(3)
             
-        if not success: logger.info("No possibilities to rebook. Script terminates")
+        if not success: logger.info("No possibilities to rebook. Udiinformer terminated")
 
 
 
