@@ -96,7 +96,7 @@ def main():
         # page.wait_for_load_state('networkidle')
         page.wait_for_load_state()
         page.wait_for_load_state(state = "domcontentloaded")
-        time.sleep(3)
+        time.sleep(5)
         # button to go to the next month
         next_btn_id = "#ctl00_BodyRegion_PageRegion_MainRegion_appointmentReservation_appointmentCalendar_btnNext"
 
@@ -143,7 +143,7 @@ def main():
             page.wait_for_load_state()
             # page.wait_for_load_state('networkidle')
             page.wait_for_load_state(state = "domcontentloaded")
-            time.sleep(3)
+            time.sleep(5)
             
         if not success: logger.info("No possibilities to rebook. Udiinformer terminated")
 
